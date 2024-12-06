@@ -272,13 +272,13 @@ GROUP BY "COURSE_BOOKING".user_id;
 
 SELECT 
     U.id AS user_id,
-    (SUM(CP.purchased_credits) - COUNT(CB.course_id)) AS remaining_credit
+    (SUM(CP.purchased_credits) - COALESCE(COUNT(CB.course_id), 0)) AS remaining_credit  -- 使用 COALESCE 處理 NULL 值
 FROM 
     "USER" U
 LEFT JOIN 
     "CREDIT_PURCHASE" CP ON U.id = CP.user_id
 LEFT JOIN 
-    "COURSE_BOOKING" CB ON U.id = CB.user_id AND CB.status = '上課中'
+    (SELECT user_id, course_id FROM "COURSE_BOOKING" WHERE status = '上課中') AS CB ON U.id = CB.user_id  -- 使用子查詢
 WHERE 
     U.name = '王小明'
 GROUP BY 
@@ -326,7 +326,7 @@ SELECT
   COUNT(*) AS "銷售數量"
 FROM "CREDIT_PURCHASE"
 INNER JOIN "CREDIT_PACKAGE" ON "CREDIT_PACKAGE".id = "CREDIT_PURCHASE".credit_package_id
-WHERE "CREDIT_PURCHASE".created_at >= '2024-12-01 00:00:00' AND "CREDIT_PURCHASE".created_at <= '2024-12-30 23:59:59'
+WHERE "CREDIT_PURCHASE".created_at >= '2024-11-01 00:00:00' AND "CREDIT_PURCHASE".created_at <= '2024-11-30 23:59:59'
 GROUP BY "CREDIT_PACKAGE".name;
 
 -- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
@@ -334,14 +334,14 @@ GROUP BY "CREDIT_PACKAGE".name;
 
 SELECT SUM(price_paid) AS "總營收"
 FROM "CREDIT_PURCHASE"
-WHERE "CREDIT_PURCHASE".purchase_at >= '2024-12-01 00:00:00' 
-AND "CREDIT_PURCHASE".purchase_at <= '2024-12-30 23:59:59';
+WHERE "CREDIT_PURCHASE".purchase_at >= '2024-11-01 00:00:00' 
+AND "CREDIT_PURCHASE".purchase_at <= '2024-11-30 23:59:59';
 
 -- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
 
 SELECT COUNT(Distinct("COURSE_BOOKING".user_id)) AS "預約會員人數"
 FROM "COURSE_BOOKING"
-WHERE "COURSE_BOOKING".created_at >= '2024-12-01 00:00:00' 
-AND "COURSE_BOOKING".created_at <= '2024-12-30 23:59:59' 
+WHERE "COURSE_BOOKING".created_at >= '2024-11-01 00:00:00' 
+AND "COURSE_BOOKING".created_at <= '2024-11-30 23:59:59' 
 AND "COURSE_BOOKING".status != '課程已取消';
