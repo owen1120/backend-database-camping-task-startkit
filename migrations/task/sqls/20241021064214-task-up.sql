@@ -272,15 +272,15 @@ GROUP BY "COURSE_BOOKING".user_id;
 
 SELECT 
     U.id AS user_id,
-    (SUM(CP.purchased_credits) - COALESCE(COUNT(CB.course_id), 0)) AS remaining_credit
+    COALESCE(SUM(CP.purchased_credits), 0) - COALESCE(COUNT(DISTINCT CB.id), 0) AS remaining_credit
 FROM 
     "USER" U
-LEFT JOIN 
+INNER JOIN 
     "CREDIT_PURCHASE" CP ON U.id = CP.user_id
-LEFT JOIN 
-    (SELECT user_id, course_id FROM "COURSE_BOOKING" WHERE status = '上課中') AS CB ON U.id = CB.user_id
+INNER JOIN 
+    "COURSE_BOOKING" CB ON U.id = CB.user_id
 WHERE 
-    U.name = '王小明'
+    U.email = 'wXlTq@hexschooltest.io' AND CB.status IN ('上課中', '即將授課') 
 GROUP BY 
     U.id;
 
